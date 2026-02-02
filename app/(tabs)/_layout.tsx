@@ -24,10 +24,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="favorites"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Favorites',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="favorite.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="concours"
+        options={{
+          title: 'Concours',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="competition.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="preparation"
+        options={{
+          title: 'Prépa',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="menu-book" color={color} />,
         }}
       />
     </Tabs>
