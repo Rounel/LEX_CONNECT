@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
  * Palette unique de l'application — source de vérité pour toutes les couleurs.
  */
 export const Palette = {
-  background: '#E4DFD8',
+  background: '#f1f1f1',
   foreground: '#24221B',
   primary: '#162660',
   secondary: '#F2D04E',
@@ -33,27 +33,20 @@ export const Colors = {
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+/**
+ * Polices de l'application
+ * - heading: Noto Serif (titres, labels)
+ * - body: Open Sans (paragraphes, phrases, inputs)
+ */
+export const Fonts = {
+  heading: {
+    regular: 'NotoSerif_400Regular',
+    semiBold: 'NotoSerif_600SemiBold',
+    bold: 'NotoSerif_700Bold',
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  body: {
+    regular: 'OpenSans_400Regular',
+    semiBold: 'OpenSans_600SemiBold',
+    bold: 'OpenSans_700Bold',
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+} as const;

@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -7,13 +9,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Palette } from '@/constants/theme';
-import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextInputField } from '@/components/text-input-field';
+import { ThemedText } from '@/components/themed-text';
+import { Palette } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function LoginScreen() {
@@ -44,12 +45,15 @@ export default function LoginScreen() {
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled">
+            
           <View style={styles.header}>
+            {/* <Image
+              source={require('@/assets/icons/icon-128x128.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            /> */}
             <ThemedText type="title" style={styles.appName}>
-              LexConnect
-            </ThemedText>
-            <ThemedText style={styles.subtitle}>
-              Connectez-vous pour continuer
+              Hey, Bon retour parmi nous !
             </ThemedText>
           </View>
 
@@ -119,8 +123,13 @@ const styles = StyleSheet.create({
     gap: 28,
   },
   header: {
-    alignItems: 'center',
     gap: 8,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+    borderRadius: 10,
   },
   appName: {
     color: Palette.primary,

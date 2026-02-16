@@ -4,6 +4,17 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
+import {
+  NotoSerif_400Regular,
+  NotoSerif_600SemiBold,
+  NotoSerif_700Bold,
+} from '@expo-google-fonts/noto-serif';
+import {
+  OpenSans_400Regular,
+  OpenSans_600SemiBold,
+  OpenSans_700Bold,
+} from '@expo-google-fonts/open-sans';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppStateProvider } from '@/contexts/app-state-context';
@@ -15,11 +26,20 @@ function RootNavigator() {
   const colorScheme = useColorScheme();
   const { isReady } = useAppState();
 
+  const [fontsLoaded] = useFonts({
+    NotoSerif_400Regular,
+    NotoSerif_600SemiBold,
+    NotoSerif_700Bold,
+    OpenSans_400Regular,
+    OpenSans_600SemiBold,
+    OpenSans_700Bold,
+  });
+
   useEffect(() => {
-    if (isReady) {
+    if (isReady && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, [isReady, fontsLoaded]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

@@ -6,7 +6,9 @@
       "Bash(dir:*)",
       "Bash(npx expo start:*)",
       "Bash(npx kill-port:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(if not exist \"assets\\fonts\" mkdir \"assets\\fonts\")",
+      "Bash(mkdir:*)"
     ]
   }
 }
