@@ -8,10 +8,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { Palette } from '@/constants/theme';
 import { useAppState } from '@/hooks/use-app-state';
 import { OnboardingPage } from '@/components/onboarding-page';
-import { PrimaryButton } from '@/components/primary-button';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -64,7 +62,10 @@ export default function OnboardingScreen() {
     }
   };
 
-  const isLastPage = currentIndex === PAGES.length - 1;
+  const handleSkip = async () => {
+    await completeOnboarding();
+    router.replace('/(auth)/login');
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
@@ -77,36 +78,21 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View style={styles.page}>
             <OnboardingPage
               iconName={item.iconName}
               title={item.title}
               description={item.description}
+              onNext={handleNext}
+              onSkip={handleSkip}
+              isLastPage={index === PAGES.length - 1}
+              currentIndex={currentIndex}
+              totalPages={PAGES.length}
             />
           </View>
         )}
       />
-
-      <View style={styles.footer}>
-        <View style={styles.dots}>
-          {PAGES.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === currentIndex ? styles.dotActive : styles.dotInactive,
-              ]}
-            />
-          ))}
-        </View>
-
-        <PrimaryButton
-          title={isLastPage ? 'Commencer' : 'Suivant'}
-          onPress={handleNext}
-          style={styles.button}
-        />
-      </View>
     </View>
   );
 }
@@ -118,30 +104,5 @@ const styles = StyleSheet.create({
   page: {
     width: SCREEN_WIDTH,
     flex: 1,
-  },
-  footer: {
-    paddingHorizontal: 32,
-    paddingBottom: 48,
-    gap: 24,
-    alignItems: 'center',
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  dotActive: {
-    backgroundColor: Palette.primary,
-  },
-  dotInactive: {
-    backgroundColor: Palette.accent2,
-    opacity: 0.4,
-  },
-  button: {
-    width: '100%',
   },
 });
