@@ -8,7 +8,8 @@
       "Bash(npx kill-port:*)",
       "Bash(taskkill:*)",
       "Bash(if not exist \"assets\\fonts\" mkdir \"assets\\fonts\")",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cd C:\\\\Users\\\\fabel\\\\Documents\\\\Ivoire_Node\\\\lex_connect:*)"
     ]
   }
 }

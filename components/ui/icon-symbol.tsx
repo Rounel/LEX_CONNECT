@@ -47,6 +47,16 @@ const MAPPING = {
   'doc.fill': 'insert-drive-file',
   'checklist': 'check-box',
   'repeat': 'repeat',
+  'graduationcap.fill': 'school',
+  'clock.fill': 'access-time',
+  'mappin.fill': 'location-on',
+  'calendar': 'calendar-today',
+  'chevron.left.circle': 'chevron-left',
+  'chevron.right.circle': 'chevron-right',
+  'book.fill': 'menu-book',
+  'pencil.fill': 'edit',
+  'trophy.fill': 'emoji-events',
+  'play.fill': 'play-arrow',
 } as IconMapping;
 
 /**

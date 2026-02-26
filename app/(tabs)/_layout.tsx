@@ -18,9 +18,9 @@ export default function TabLayout() {
         header: ({ options }) => <AppHeader title={options.title ?? ''} />,
       }}>
       <Tabs.Screen
-        name="lois"
+        name="bibliotheque"
         options={{
-          title: 'Lois',
+          title: 'Bibliothèque',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="building.columns.fill" color={color} />
           ),

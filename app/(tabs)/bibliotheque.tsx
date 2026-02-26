@@ -307,7 +307,7 @@ function SearchResultItem({ item }: { item: SearchResult }) {
 
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
-export default function LoisScreen() {
+export default function BibliothequeScreen() {
   const [search, setSearch] = useState('');
 
   const searchResults = useMemo<SearchResult[]>(() => {
