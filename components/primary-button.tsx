@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { Palette } from '@/constants/theme';
+import { Palette, Fonts } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 
 type PrimaryButtonProps = {
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.body.semiBold,
   },
   filledLabel: {
     color: '#FFFFFF',

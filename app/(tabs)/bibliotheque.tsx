@@ -14,7 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const COL_W = (SCREEN_WIDTH - 32) / 5; // grille 5 colonnes, padding 16px de chaque côté
+const COL_W = (SCREEN_WIDTH - 40) / 5; // grille 5 colonnes, padding 20px de chaque côté
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { StyleSheet, TextInput, View, type KeyboardTypeOptions } from 'react-native';
 
-import { Palette } from '@/constants/theme';
+import { Palette, Fonts } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -62,5 +62,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: Fonts.body.regular,
   },
 });
