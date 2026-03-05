@@ -9,7 +9,8 @@
       "Bash(taskkill:*)",
       "Bash(if not exist \"assets\\fonts\" mkdir \"assets\\fonts\")",
       "Bash(mkdir:*)",
-      "Bash(cd C:\\\\Users\\\\fabel\\\\Documents\\\\Ivoire_Node\\\\lex_connect:*)"
+      "Bash(cd C:\\\\Users\\\\fabel\\\\Documents\\\\Ivoire_Node\\\\lex_connect:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

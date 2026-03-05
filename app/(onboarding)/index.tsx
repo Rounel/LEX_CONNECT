@@ -17,24 +17,24 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PAGES = [
   {
     id: '1',
-    iconName: 'menu-book' as const,
-    title: 'Consultez les lois',
+    iconName: 'building.columns.fill' as const,
+    title: 'Tout le droit ivoirien en poche',
     description:
-      'Accédez aux textes juridiques de plusieurs pays africains, organisés et faciles à parcourir.',
+      'Codes, lois, décrets, jurisprudences — accédez à l\'intégralité des textes juridiques de Côte d\'Ivoire, organisés et toujours à jour.',
   },
   {
     id: '2',
-    iconName: 'competition.fill' as const,
-    title: 'Préparez vos concours',
+    iconName: 'sparkles' as const,
+    title: '4 outils, 1 seule application',
     description:
-      'Des ressources pour réussir vos concours administratifs et juridiques, à portée de main.',
+      'Bibliothèque juridique, actualités législatives, assistant IA Alexia et préparation aux concours — tout ce dont vous avez besoin.',
   },
   {
     id: '3',
-    iconName: 'checkmark.circle.fill' as const,
-    title: 'Prêt à commencer !',
+    iconName: 'checkmark.seal.fill' as const,
+    title: 'Alexia, votre guide juridique',
     description:
-      'Créez votre compte ou explorez librement l\'application dès maintenant.',
+      'Posez vos questions en langage naturel. Alexia analyse le droit ivoirien et cite toujours ses sources pour vous guider avec précision.',
   },
 ];
 

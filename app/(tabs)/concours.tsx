@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts, Palette } from '@/constants/theme';
 
@@ -415,13 +416,13 @@ function DayEvents({ events }: { events: Concours[] }) {
 
 // ─── Concours card ────────────────────────────────────────────────────────────
 
-function ConcoursCard({ item }: { item: Concours }) {
+function ConcoursCard({ item, onPress }: { item: Concours; onPress?: () => void }) {
   const today = new Date();
   const daysLeft = daysBetween(today, item.dateCloture);
   const cloturePassee = daysLeft < 0;
 
   return (
-    <View style={[card.wrapper, { borderLeftColor: item.color }]}>
+    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={[card.wrapper, { borderLeftColor: item.color }]}>
       {/* Date badge */}
       <View style={[card.dateBadge, { backgroundColor: item.color }]}>
         <Text style={card.badgeDay}>{item.dateEpreuve.getDate()}</Text>
@@ -490,7 +491,7 @@ function ConcoursCard({ item }: { item: Concours }) {
           <Text style={card.epreuveDate}>Épreuve : {formatDate(item.dateEpreuve)}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -522,7 +523,7 @@ function FormationCard({ item }: { item: Formation }) {
 
 // ─── Exercice card ────────────────────────────────────────────────────────────
 
-function ExerciceCard({ item }: { item: Exercice }) {
+function ExerciceCard({ item, onPress }: { item: Exercice; onPress?: () => void }) {
   const diff = DIFF_COLOR[item.difficulte];
   return (
     <View style={[ecard.wrapper, { borderTopColor: item.color }]}>
@@ -537,7 +538,7 @@ function ExerciceCard({ item }: { item: Exercice }) {
           <Text style={[ecard.diffText, { color: diff.text }]}>{item.difficulte}</Text>
         </View>
       </View>
-      <TouchableOpacity style={[ecard.btn, { backgroundColor: item.color }]}>
+      <TouchableOpacity style={[ecard.btn, { backgroundColor: item.color }]} onPress={onPress}>
         <IconSymbol name="play.fill" size={13} color="#fff" />
         <Text style={ecard.btnText}>Démarrer</Text>
       </TouchableOpacity>
@@ -548,6 +549,7 @@ function ExerciceCard({ item }: { item: Exercice }) {
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function ConcoursScreen() {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -609,7 +611,7 @@ export default function ConcoursScreen() {
         contentContainerStyle={styles.hScroll}
       >
         {EXERCICES.map(e => (
-          <ExerciceCard key={e.id} item={e} />
+          <ExerciceCard key={e.id} item={e} onPress={() => router.push('/concours/quiz' as any)} />
         ))}
       </ScrollView>
 
@@ -627,7 +629,7 @@ export default function ConcoursScreen() {
       keyExtractor={item => item.id}
       renderItem={({ item }) => (
         <View style={{ paddingHorizontal: H_PADDING }}>
-          <ConcoursCard item={item} />
+          <ConcoursCard item={item} onPress={() => router.push(`/concours/${item.id}` as any)} />
         </View>
       )}
       ListHeaderComponent={ListHeader}

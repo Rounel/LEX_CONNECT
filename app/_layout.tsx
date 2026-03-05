@@ -49,6 +49,21 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(country)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="document/[id]" />
+        <Stack.Screen name="reader/[id]" />
+        <Stack.Screen name="versions/[id]" />
+        <Stack.Screen name="suivis" />
+        <Stack.Screen name="actualite/[id]" />
+        <Stack.Screen name="filtres" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="alexia/historique" />
+        <Stack.Screen name="concours/[id]" />
+        <Stack.Screen name="concours/quiz" />
+        <Stack.Screen name="concours/resultat" />
+        <Stack.Screen name="concours/annales" />
+        <Stack.Screen name="profil" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="settings/notifications" />
+        <Stack.Screen name="settings/affichage" />
         <Stack.Screen
           name="modal"
           options={{ presentation: 'modal', title: 'Modal', headerShown: true }}

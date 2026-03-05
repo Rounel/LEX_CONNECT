@@ -8,10 +8,25 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { Fonts, Palette } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+
+// ─── Catégories de filtre ─────────────────────────────────────────────────────
+
+const FILTRES_CAT = [
+  { id: 'tous', label: 'Tous' },
+  { id: 'codes', label: 'Codes' },
+  { id: 'lois', label: 'Lois' },
+  { id: 'decrets', label: 'Décrets' },
+  { id: 'jurisprudences', label: 'Jurisprudences' },
+  { id: 'ordonnances', label: 'Ordonnances' },
+  { id: 'reglements', label: 'Règlements' },
+] as const;
+
+type FiltreCatId = (typeof FILTRES_CAT)[number]['id'];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COL_W = (SCREEN_WIDTH - 40) / 5; // grille 5 colonnes, padding 20px de chaque côté
@@ -146,6 +161,85 @@ const CATEGORIES: CategoryItem[] = [
   { id: '12', label: 'Circulaires', icon: 'repeat', bg: '#FFF8E1', color: '#F57F17' },
 ];
 
+// ─── Textes suivis & récemment consultés ─────────────────────────────────────
+
+type FollowedItem = {
+  id: string;
+  type: string;
+  titre: string;
+  domaine: string;
+  statut: 'En vigueur' | 'Abrogé' | 'Modifié';
+  accentColor: string;
+};
+
+const TEXTES_SUIVIS: FollowedItem[] = [
+  {
+    id: 'f1',
+    type: 'Code',
+    titre: 'Code Civil ivoirien',
+    domaine: 'Droit civil',
+    statut: 'En vigueur',
+    accentColor: '#162660',
+  },
+  {
+    id: 'f2',
+    type: 'Loi',
+    titre: 'Code du Travail',
+    domaine: 'Droit social',
+    statut: 'Modifié',
+    accentColor: '#2E7D32',
+  },
+  {
+    id: 'f3',
+    type: 'Ordonnance',
+    titre: 'Ordonnance relative aux sociétés commerciales',
+    domaine: 'Droit commercial',
+    statut: 'En vigueur',
+    accentColor: '#E65100',
+  },
+  {
+    id: 'f4',
+    type: 'Décret',
+    titre: 'Décret n°2023-472 portant fiscalité des entreprises',
+    domaine: 'Droit fiscal',
+    statut: 'En vigueur',
+    accentColor: '#BF360C',
+  },
+];
+
+const RECENTS_CONSULTES: FollowedItem[] = [
+  {
+    id: 'rc1',
+    type: 'Jurisprudence',
+    titre: 'Cour Suprême — Arrêt n°001/2026',
+    domaine: 'Droit de la famille',
+    statut: 'En vigueur',
+    accentColor: '#0F766E',
+  },
+  {
+    id: 'rc2',
+    type: 'Code',
+    titre: 'Code de Procédure Pénale',
+    domaine: 'Droit pénal',
+    statut: 'En vigueur',
+    accentColor: '#7C2D12',
+  },
+  {
+    id: 'rc3',
+    type: 'Loi',
+    titre: 'Loi relative à la cybersécurité',
+    domaine: 'Droit numérique',
+    statut: 'Modifié',
+    accentColor: '#1565C0',
+  },
+];
+
+const STATUT_COLOR: Record<FollowedItem['statut'], { bg: string; text: string }> = {
+  'En vigueur': { bg: '#E6F6EE', text: '#1E7A47' },
+  'Abrogé': { bg: '#FDEDEB', text: '#C0392B' },
+  'Modifié': { bg: '#FEF4E8', text: '#D4821A' },
+};
+
 const CODES: CodeItem[] = [
   { id: '1', titre: 'Code Civil', pays: "Côte d'Ivoire", drapeau: '🇨🇮', articles: 2283, bg: '#162660' },
   { id: '2', titre: 'Code Pénal', pays: "Côte d'Ivoire", drapeau: '🇨🇮', articles: 645, bg: '#C62828' },
@@ -205,20 +299,71 @@ const ALL_SEARCHABLE: SearchResult[] = [
 
 // ─── Composants ───────────────────────────────────────────────────────────────
 
-function SectionHeader({ title }: { title: string }) {
+// ─── Composants ───────────────────────────────────────────────────────────────
+
+function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
   return (
     <View style={styles.sectionHeader}>
       <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
-      <Pressable hitSlop={8}>
-        <ThemedText style={styles.seeAll}>Voir tout</ThemedText>
-      </Pressable>
+      {onSeeAll !== undefined && (
+        <Pressable hitSlop={8} onPress={onSeeAll}>
+          <ThemedText style={styles.seeAll}>Voir tout</ThemedText>
+        </Pressable>
+      )}
     </View>
   );
 }
 
-function RecentCard({ item }: { item: RecentItem }) {
+/** Chip de filtre horizontal */
+function FiltreChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
-    <Pressable style={({ pressed }) => [styles.recentCard, pressed && styles.cardPressed]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.filtreChip, active && styles.filtreChipActive]}>
+      <ThemedText style={[styles.filtreChipText, active && styles.filtreChipTextActive]}>
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+/** Carte compacte pour "Mes textes suivis" et "Récemment consultés" */
+function FollowedCard({ item, onPress }: { item: FollowedItem; onPress?: () => void }) {
+  const statut = STATUT_COLOR[item.statut];
+  return (
+    <Pressable style={({ pressed }) => [styles.followedCard, pressed && styles.cardPressed]} onPress={onPress}>
+      <View style={[styles.followedAccent, { backgroundColor: item.accentColor }]} />
+      <View style={styles.followedBody}>
+        <View style={styles.followedTopRow}>
+          <ThemedText style={[styles.followedType, { color: item.accentColor }]}>
+            {item.type}
+          </ThemedText>
+          <View style={[styles.statutBadge, { backgroundColor: statut.bg }]}>
+            <ThemedText style={[styles.statutText, { color: statut.text }]}>
+              {item.statut}
+            </ThemedText>
+          </View>
+        </View>
+        <ThemedText style={styles.followedTitre} numberOfLines={2}>
+          {item.titre}
+        </ThemedText>
+        <ThemedText style={styles.followedDomaine}>{item.domaine}</ThemedText>
+      </View>
+    </Pressable>
+  );
+}
+
+function RecentCard({ item, onPress }: { item: RecentItem; onPress?: () => void }) {
+  return (
+    <Pressable style={({ pressed }) => [styles.recentCard, pressed && styles.cardPressed]} onPress={onPress}>
       <View style={[styles.recentAccent, { backgroundColor: item.accentColor }]} />
       <View style={styles.recentBody}>
         <ThemedText style={[styles.recentType, { color: item.accentColor }]}>
@@ -251,9 +396,9 @@ function CategoryGridItem({ item }: { item: CategoryItem }) {
   );
 }
 
-function CodeCard({ item }: { item: CodeItem }) {
+function CodeCard({ item, onPress }: { item: CodeItem; onPress?: () => void }) {
   return (
-    <Pressable style={({ pressed }) => [styles.codeCard, pressed && styles.cardPressed]}>
+    <Pressable style={({ pressed }) => [styles.codeCard, pressed && styles.cardPressed]} onPress={onPress}>
       <View style={[styles.codeTop, { backgroundColor: item.bg }]}>
         <ThemedText style={styles.codeDrapeau}>{item.drapeau}</ThemedText>
       </View>
@@ -267,9 +412,10 @@ function CodeCard({ item }: { item: CodeItem }) {
   );
 }
 
-function JurisprudenceCard({ item }: { item: JurisItem }) {
+function JurisprudenceCard({ item, onPress }: { item: JurisItem; onPress?: () => void }) {
   return (
     <Pressable
+      onPress={onPress}
       style={({ pressed }) => [
         styles.jurisCard,
         { borderTopColor: item.accentColor },
@@ -288,9 +434,9 @@ function JurisprudenceCard({ item }: { item: JurisItem }) {
   );
 }
 
-function SearchResultItem({ item }: { item: SearchResult }) {
+function SearchResultItem({ item, onPress }: { item: SearchResult; onPress: () => void }) {
   return (
-    <Pressable style={({ pressed }) => [styles.searchResultItem, pressed && styles.cardPressed]}>
+    <Pressable style={({ pressed }) => [styles.searchResultItem, pressed && styles.cardPressed]} onPress={onPress}>
       <View style={styles.searchResultLeft}>
         <ThemedText style={styles.searchResultType}>{item.type}</ThemedText>
         <ThemedText style={styles.searchResultTitle} numberOfLines={2}>
@@ -307,8 +453,12 @@ function SearchResultItem({ item }: { item: SearchResult }) {
 
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
+// ─── Écran principal ──────────────────────────────────────────────────────────
+
 export default function BibliothequeScreen() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
+  const [filtreCat, setFiltreCat] = useState<FiltreCatId>('tous');
 
   const searchResults = useMemo<SearchResult[]>(() => {
     const q = search.trim().toLowerCase();
@@ -323,9 +473,18 @@ export default function BibliothequeScreen() {
 
   const isSearching = search.trim().length > 0;
 
+  // Sections visibles selon le filtre actif
+  const showCodes = filtreCat === 'tous' || filtreCat === 'codes';
+  const showLois = filtreCat === 'tous' || filtreCat === 'lois';
+  const showDecrets = filtreCat === 'tous' || filtreCat === 'decrets';
+  const showJuris = filtreCat === 'tous' || filtreCat === 'jurisprudences';
+  const showOrdonnances = filtreCat === 'tous' || filtreCat === 'ordonnances';
+  const showReglements = filtreCat === 'tous' || filtreCat === 'reglements';
+  const showTout = filtreCat === 'tous';
+
   return (
     <View style={styles.container}>
-      {/* Barre de recherche */}
+      {/* ── Barre de recherche ── */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchBar}>
           <IconSymbol name="magnifyingglass" size={18} color={Palette.accent2} />
@@ -337,9 +496,16 @@ export default function BibliothequeScreen() {
             onChangeText={setSearch}
             returnKeyType="search"
           />
-          {isSearching && (
+          {isSearching ? (
             <Pressable onPress={() => setSearch('')} hitSlop={8}>
               <IconSymbol name="xmark" size={16} color={Palette.accent2} />
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => router.push('/filtres' as any)}
+              hitSlop={8}
+              style={styles.filterBtn}>
+              <IconSymbol name="slider.horizontal.3" size={18} color={Palette.primary} />
             </Pressable>
           )}
         </View>
@@ -350,67 +516,135 @@ export default function BibliothequeScreen() {
         <FlatList
           data={searchResults}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <SearchResultItem item={item} />}
+          renderItem={({ item }) => <SearchResultItem item={item} onPress={() => router.push(`/document/${item.id}` as any)} />}
           contentContainerStyle={styles.searchResultsList}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptySearch}>
-              <ThemedText style={styles.emptySearchText}>Aucun résultat pour « {search} »</ThemedText>
+              <ThemedText style={styles.emptySearchText}>
+                Aucun résultat pour « {search} »
+              </ThemedText>
             </View>
           }
         />
       ) : (
         /* ── Sections de découverte ── */
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-          {/* Modifié récemment */}
-          <View style={styles.section}>
-            <SectionHeader title="Modifié récemment" />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.hScroll}>
-              {RECENTS.map((item) => (
-                <RecentCard key={item.id} item={item} />
-              ))}
-            </ScrollView>
-          </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.content}>
 
-          {/* Catégories */}
-          <View style={styles.section}>
-            <SectionHeader title="Catégories" />
-            <View style={styles.catGrid}>
-              {CATEGORIES.map((item) => (
-                <CategoryGridItem key={item.id} item={item} />
-              ))}
+          {/* ── FilterRow catégories ── */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filtreRow}
+            style={styles.filtreRowWrapper}>
+            {FILTRES_CAT.map((f) => (
+              <FiltreChip
+                key={f.id}
+                label={f.label}
+                active={filtreCat === f.id}
+                onPress={() => setFiltreCat(f.id)}
+              />
+            ))}
+          </ScrollView>
+
+          {/* ── Mes textes suivis ── */}
+          {showTout && (
+            <View style={styles.section}>
+              <SectionHeader title="Mes textes suivis" onSeeAll={() => router.push('/suivis' as any)} />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.hScroll}>
+                {TEXTES_SUIVIS.map((item) => (
+                  <FollowedCard key={item.id} item={item} onPress={() => router.push(`/document/${item.id}` as any)} />
+                ))}
+              </ScrollView>
             </View>
-          </View>
+          )}
 
-          {/* Codes et recueils */}
-          <View style={styles.section}>
-            <SectionHeader title="Codes et recueils de textes" />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.hScroll}>
-              {CODES.map((item) => (
-                <CodeCard key={item.id} item={item} />
-              ))}
-            </ScrollView>
-          </View>
+          {/* ── Récemment consultés ── */}
+          {showTout && (
+            <View style={styles.section}>
+              <SectionHeader title="Récemment consultés" onSeeAll={() => {}} />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.hScroll}>
+                {RECENTS_CONSULTES.map((item) => (
+                  <FollowedCard key={item.id} item={item} onPress={() => router.push(`/document/${item.id}` as any)} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
-          {/* Jurisprudence */}
-          <View style={styles.section}>
-            <SectionHeader title="Jurisprudence" />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.hScroll}>
-              {JURISPRUDENCES.map((item) => (
-                <JurisprudenceCard key={item.id} item={item} />
-              ))}
-            </ScrollView>
-          </View>
+          {/* ── Récemment modifiés ── */}
+          {(showTout || showLois || showDecrets || showOrdonnances || showReglements) && (
+            <View style={styles.section}>
+              <SectionHeader title="Récemment modifiés" onSeeAll={() => {}} />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.hScroll}>
+                {RECENTS
+                  .filter((r) =>
+                    showTout ||
+                    (showLois && r.type === 'Loi') ||
+                    (showDecrets && r.type === 'Décret') ||
+                    (showOrdonnances && r.type === 'Ordonnance') ||
+                    (showReglements && r.type === 'Arrêté'),
+                  )
+                  .map((item) => (
+                    <RecentCard key={item.id} item={item} onPress={() => router.push(`/document/${item.id}` as any)} />
+                  ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* ── Catégories ── */}
+          {showTout && (
+            <View style={styles.section}>
+              <SectionHeader title="Catégories" />
+              <View style={styles.catGrid}>
+                {CATEGORIES.map((item) => (
+                  <CategoryGridItem key={item.id} item={item} />
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ── Codes et recueils ── */}
+          {(showCodes || showTout) && (
+            <View style={styles.section}>
+              <SectionHeader title="Codes et recueils" onSeeAll={() => {}} />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.hScroll}>
+                {CODES.map((item) => (
+                  <CodeCard key={item.id} item={item} onPress={() => router.push(`/document/${item.id}` as any)} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* ── Jurisprudence ── */}
+          {(showJuris || showTout) && (
+            <View style={styles.section}>
+              <SectionHeader title="Jurisprudence" onSeeAll={() => {}} />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.hScroll}>
+                {JURISPRUDENCES.map((item) => (
+                  <JurisprudenceCard key={item.id} item={item} onPress={() => router.push(`/document/${item.id}` as any)} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
         </ScrollView>
       )}
     </View>
@@ -440,6 +674,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 10,
+  },
+  filterBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: Palette.accent1,
   },
   searchInput: {
     flex: 1,
@@ -661,6 +903,88 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.body.regular,
     color: Palette.accent2,
     textAlign: 'center',
+  },
+
+  // FilterRow catégories
+  filtreRowWrapper: {
+    backgroundColor: Palette.background,
+  },
+  filtreRow: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
+    gap: 8,
+  },
+  filtreChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: Palette.accent2 + '30',
+  },
+  filtreChipActive: {
+    backgroundColor: Palette.primary,
+    borderColor: Palette.primary,
+  },
+  filtreChipText: {
+    fontSize: 13,
+    fontFamily: Fonts.body.semiBold,
+    color: Palette.foreground,
+  },
+  filtreChipTextActive: {
+    color: '#fff',
+  },
+
+  // Carte suivie (Mes textes suivis / Récemment consultés)
+  followedCard: {
+    width: 200,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    overflow: 'hidden',
+    flexDirection: 'row',
+  },
+  followedAccent: {
+    width: 4,
+  },
+  followedBody: {
+    flex: 1,
+    padding: 13,
+    gap: 7,
+  },
+  followedTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  followedType: {
+    fontSize: 10,
+    fontFamily: Fonts.body.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  followedTitre: {
+    fontSize: 13,
+    fontFamily: Fonts.heading.semiBold,
+    color: Palette.foreground,
+    lineHeight: 18,
+  },
+  followedDomaine: {
+    fontSize: 11,
+    fontFamily: Fonts.body.regular,
+    color: Palette.accent2,
+  },
+  statutBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    flexShrink: 0,
+  },
+  statutText: {
+    fontSize: 9,
+    fontFamily: Fonts.body.semiBold,
+    letterSpacing: 0.3,
   },
 
   // Feedback pression

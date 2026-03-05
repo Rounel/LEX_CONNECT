@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -6,8 +5,6 @@ import { useRouter } from 'expo-router';
 import { Fonts, Palette } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ProfileSidebar } from '@/components/ui/profile-sidebar';
-import { NotificationsSidebar } from '@/components/ui/notifications-sidebar';
 
 const UNREAD_NOTIFICATIONS = 2;
 
@@ -19,59 +16,49 @@ export function AppHeader({ title }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const canGoBack = router.canGoBack();
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.inner}>
-          {/* Gauche : bouton retour ou espace vide */}
-          <View style={styles.side}>
-            {canGoBack && (
-              <Pressable
-                style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-                onPress={() => router.back()}
-                hitSlop={8}>
-                <IconSymbol name="chevron.left" size={24} color={Palette.foreground} />
-              </Pressable>
-            )}
-          </View>
-
-          {/* Centre : titre */}
-          <ThemedText style={styles.title} numberOfLines={1}>
-            {title}
-          </ThemedText>
-
-          {/* Droite : cloche + avatar */}
-          <View style={[styles.side, styles.rightSide]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.inner}>
+        {/* Gauche : bouton retour ou espace vide */}
+        <View style={styles.side}>
+          {canGoBack && (
             <Pressable
               style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-              onPress={() => setNotificationsOpen(true)}
+              onPress={() => router.back()}
               hitSlop={8}>
-              <IconSymbol name="bell.fill" size={22} color={Palette.foreground} />
-              {UNREAD_NOTIFICATIONS > 0 && (
-                <View style={styles.badge}>
-                  <ThemedText style={styles.badgeText}>{UNREAD_NOTIFICATIONS}</ThemedText>
-                </View>
-              )}
+              <IconSymbol name="chevron.left" size={24} color={Palette.foreground} />
             </Pressable>
+          )}
+        </View>
 
-            <Pressable
-              style={({ pressed }) => [styles.avatar, pressed && styles.avatarPressed]}
-              onPress={() => setProfileOpen(true)}>
-              <ThemedText style={styles.avatarInitial}>K</ThemedText>
-            </Pressable>
-          </View>
+        {/* Centre : titre */}
+        <ThemedText style={styles.title} numberOfLines={1}>
+          {title}
+        </ThemedText>
+
+        {/* Droite : cloche + avatar */}
+        <View style={[styles.side, styles.rightSide]}>
+          <Pressable
+            style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+            onPress={() => router.push('/notifications' as any)}
+            hitSlop={8}>
+            <IconSymbol name="bell.fill" size={22} color={Palette.foreground} />
+            {UNREAD_NOTIFICATIONS > 0 && (
+              <View style={styles.badge}>
+                <ThemedText style={styles.badgeText}>{UNREAD_NOTIFICATIONS}</ThemedText>
+              </View>
+            )}
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.avatar, pressed && styles.avatarPressed]}
+            onPress={() => router.push('/profil' as any)}>
+            <ThemedText style={styles.avatarInitial}>K</ThemedText>
+          </Pressable>
         </View>
       </View>
-
-      <ProfileSidebar visible={profileOpen} onClose={() => setProfileOpen(false)} />
-      <NotificationsSidebar
-        visible={notificationsOpen}
-        onClose={() => setNotificationsOpen(false)}
-      />
-    </>
+    </View>
   );
 }
 

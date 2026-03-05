@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -14,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextInputField } from '@/components/text-input-field';
 import { ThemedText } from '@/components/themed-text';
-import { Palette } from '@/constants/theme';
+import { Fonts, Palette } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function LoginScreen() {
@@ -73,6 +72,14 @@ export default function LoginScreen() {
               placeholder="Votre mot de passe"
               secureTextEntry
             />
+            <Pressable
+              onPress={() => router.push('/(auth)/forgot-password')}
+              style={styles.forgotPassword}
+              hitSlop={8}>
+              <ThemedText style={styles.forgotPasswordText}>
+                Mot de passe oublié ?
+              </ThemedText>
+            </Pressable>
             <PrimaryButton title="Se connecter" onPress={handleLogin} />
           </View>
 
@@ -160,5 +167,14 @@ const styles = StyleSheet.create({
   registerContainer: {
     alignItems: 'center',
     paddingBottom: 16,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+  },
+  forgotPasswordText: {
+    fontSize: 13,
+    fontFamily: Fonts.body.semiBold,
+    color: Palette.primary,
   },
 });

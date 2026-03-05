@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { Fonts, Palette } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
@@ -250,10 +251,10 @@ function StatutBadge({ statut }: { statut: Evenement['statut'] }) {
   );
 }
 
-function FeaturedCard({ evt }: { evt: Evenement }) {
+function FeaturedCard({ evt, onPress }: { evt: Evenement; onPress?: () => void }) {
   const color = INST_COLOR[evt.institution] ?? Palette.primary;
   return (
-    <Pressable style={({ pressed }) => [styles.featuredCard, pressed && styles.pressed]}>
+    <Pressable style={({ pressed }) => [styles.featuredCard, pressed && styles.pressed]} onPress={onPress}>
       {/* Bandeau institution */}
       <View style={[styles.featuredBanner, { backgroundColor: color }]}>
         <ThemedText style={styles.featuredInst}>{evt.institution}</ThemedText>
@@ -287,10 +288,10 @@ function FeaturedCard({ evt }: { evt: Evenement }) {
   );
 }
 
-function EvenementCard({ evt }: { evt: Evenement }) {
+function EvenementCard({ evt, onPress }: { evt: Evenement; onPress?: () => void }) {
   const color = INST_COLOR[evt.institution] ?? Palette.primary;
   return (
-    <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={onPress}>
       <View style={[styles.cardAccent, { backgroundColor: color }]} />
       <View style={styles.cardBody}>
         <View style={styles.cardTopRow}>
@@ -325,6 +326,7 @@ function EvenementCard({ evt }: { evt: Evenement }) {
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function ActualitesScreen() {
+  const router = useRouter();
   const [filtre, setFiltre] = useState('Tout');
 
   const evenementsFiltres = useMemo(
@@ -353,7 +355,7 @@ export default function ActualitesScreen() {
       {/* Événement à la une */}
       {featured && (
         <View style={styles.featuredWrapper}>
-          <FeaturedCard evt={featured} />
+          <FeaturedCard evt={featured} onPress={() => router.push(`/actualite/${featured.id}` as any)} />
         </View>
       )}
 
@@ -376,7 +378,7 @@ export default function ActualitesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
-            <EvenementCard evt={item} />
+            <EvenementCard evt={item} onPress={() => router.push(`/actualite/${item.id}` as any)} />
           </View>
         )}
         ListHeaderComponent={ListHeader}
