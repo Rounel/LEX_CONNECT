@@ -64,7 +64,7 @@ export default function VersionsScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <ThemedText style={styles.docTitle}>Code Civil de Côte d'Ivoire</ThemedText>
+        <ThemedText style={styles.docTitle}>Code Civil de Côte d&apos;Ivoire</ThemedText>
 
         {MOCK_VERSIONS.map((v, i) => (
           <View key={v.num} style={styles.row}>

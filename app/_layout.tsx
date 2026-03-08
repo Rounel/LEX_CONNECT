@@ -18,6 +18,7 @@ import {
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppStateProvider } from '@/contexts/app-state-context';
+import { AuthProvider } from '@/contexts/auth-context';
 import { useAppState } from '@/hooks/use-app-state';
 
 SplashScreen.preventAutoHideAsync();
@@ -52,6 +53,7 @@ function RootNavigator() {
         <Stack.Screen name="document/[id]" />
         <Stack.Screen name="reader/[id]" />
         <Stack.Screen name="versions/[id]" />
+        <Stack.Screen name="liste" />
         <Stack.Screen name="suivis" />
         <Stack.Screen name="actualite/[id]" />
         <Stack.Screen name="filtres" options={{ presentation: 'modal' }} />
@@ -77,7 +79,9 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <AppStateProvider>
-      <RootNavigator />
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
     </AppStateProvider>
   );
 }

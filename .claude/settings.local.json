@@ -10,7 +10,8 @@
       "Bash(if not exist \"assets\\fonts\" mkdir \"assets\\fonts\")",
       "Bash(mkdir:*)",
       "Bash(cd C:\\\\Users\\\\fabel\\\\Documents\\\\Ivoire_Node\\\\lex_connect:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node:*)"
     ]
   }
 }

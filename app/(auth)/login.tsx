@@ -15,21 +15,41 @@ import { TextInputField } from '@/components/text-input-field';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Palette } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/contexts/auth-context';
+import { ApiError } from '@/services/api/client';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [debugError, setDebugError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const bgColor = useThemeColor({}, 'mainBackground');
 
-  const handleLogin = () => {
-    // No-op pour l'instant
-    router.replace('/(country)/select');
-  };
-
-  const handleGoogle = () => {
-    // No-op pour l'instant
-    router.replace('/(country)/select');
+  const handleLogin = async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      await login(email.trim(), password);
+      router.replace('/(country)/select');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401 || err.status === 400) {
+          setError('Email ou mot de passe incorrect.');
+        } else {
+          setError('Une erreur est survenue. Veuillez réessayer.');
+        }
+      } else {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[Login] Erreur inattendue:', err);
+        setDebugError(msg);
+        setError('Impossible de se connecter. Vérifiez votre connexion internet.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSkip = () => {
@@ -60,7 +80,7 @@ export default function LoginScreen() {
             <TextInputField
               label="Email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(v) => { setEmail(v); setError(null); }}
               placeholder="votre@email.com"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -68,10 +88,16 @@ export default function LoginScreen() {
             <TextInputField
               label="Mot de passe"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(v) => { setPassword(v); setError(null); }}
               placeholder="Votre mot de passe"
               secureTextEntry
             />
+            {error !== null && (
+              <ThemedText style={styles.errorText}>{error}</ThemedText>
+            )}
+            {debugError !== null && (
+              <ThemedText style={styles.debugErrorText}>DEBUG: {debugError}</ThemedText>
+            )}
             <Pressable
               onPress={() => router.push('/(auth)/forgot-password')}
               style={styles.forgotPassword}
@@ -80,7 +106,11 @@ export default function LoginScreen() {
                 Mot de passe oublié ?
               </ThemedText>
             </Pressable>
-            <PrimaryButton title="Se connecter" onPress={handleLogin} />
+            <PrimaryButton
+              title={isLoading ? 'Connexion…' : 'Se connecter'}
+              onPress={handleLogin}
+              disabled={isLoading || email.trim().length === 0 || password.length === 0}
+            />
           </View>
 
           <View style={styles.divider}>
@@ -90,11 +120,6 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.alternatives}>
-            <PrimaryButton
-              title="Continuer avec Google"
-              onPress={handleGoogle}
-              variant="outlined"
-            />
             <PrimaryButton
               title="Continuer sans se connecter"
               onPress={handleSkip}
@@ -176,5 +201,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Fonts.body.semiBold,
     color: Palette.primary,
+  },
+  errorText: {
+    fontSize: 13,
+    fontFamily: Fonts.body.regular,
+    color: '#C62828',
+    lineHeight: 18,
+  },
+  debugErrorText: {
+    fontSize: 11,
+    fontFamily: Fonts.body.regular,
+    color: '#888',
+    lineHeight: 16,
   },
 });

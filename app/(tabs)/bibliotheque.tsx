@@ -583,7 +583,15 @@ export default function BibliothequeScreen() {
           {/* ── Récemment modifiés ── */}
           {(showTout || showLois || showDecrets || showOrdonnances || showReglements) && (
             <View style={styles.section}>
-              <SectionHeader title="Récemment modifiés" onSeeAll={() => {}} />
+              <SectionHeader
+                title="Récemment modifiés"
+                onSeeAll={() =>
+                  router.push({
+                    pathname: '/liste',
+                    params: { title: 'Récemment modifiés', mode: 'documents', defaultStatus: 'modifie' },
+                  } as any)
+                }
+              />
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -606,7 +614,7 @@ export default function BibliothequeScreen() {
           {/* ── Catégories ── */}
           {showTout && (
             <View style={styles.section}>
-              <SectionHeader title="Catégories" />
+              <SectionHeader title="Textes législatifs et Réglementaires" />
               <View style={styles.catGrid}>
                 {CATEGORIES.map((item) => (
                   <CategoryGridItem key={item.id} item={item} />
@@ -618,7 +626,15 @@ export default function BibliothequeScreen() {
           {/* ── Codes et recueils ── */}
           {(showCodes || showTout) && (
             <View style={styles.section}>
-              <SectionHeader title="Codes et recueils" onSeeAll={() => {}} />
+              <SectionHeader
+                title="Codes et recueils"
+                onSeeAll={() =>
+                  router.push({
+                    pathname: '/liste',
+                    params: { title: 'Codes et recueils', mode: 'documents', type: 'code' },
+                  } as any)
+                }
+              />
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -633,7 +649,15 @@ export default function BibliothequeScreen() {
           {/* ── Jurisprudence ── */}
           {(showJuris || showTout) && (
             <View style={styles.section}>
-              <SectionHeader title="Jurisprudence" onSeeAll={() => {}} />
+              <SectionHeader
+                title="Jurisprudence"
+                onSeeAll={() =>
+                  router.push({
+                    pathname: '/liste',
+                    params: { title: 'Jurisprudence', mode: 'jurisprudences' },
+                  } as any)
+                }
+              />
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}

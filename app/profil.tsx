@@ -1,27 +1,32 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts, Palette } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const USER = {
-  prenom: 'Jean-Paul',
-  nom: 'Dupont',
-  initiales: 'JD',
-  profil: 'Étudiant en droit',
-  profilIcon: 'graduationcap.fill' as const,
-  email: 'jean-paul.dupont@email.com',
-};
+function getInitiales(fullName: string | null | undefined): string {
+  if (!fullName) return '?';
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
-const STATS = [
-  { label: 'Textes suivis', value: '12' },
-  { label: 'Conversations', value: '47' },
-  { label: 'Quiz faits', value: '230' },
-];
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+// ─── Sections menu (statiques) ────────────────────────────────────────────────
 
 const MENU_SECTIONS = [
   {
@@ -51,11 +56,32 @@ const MENU_SECTIONS = [
 
 export default function ProfilScreen() {
   const router = useRouter();
+  const { user, isAuthenticated, isPremium, logout, refreshProfile } = useAuth();
+
+  // Charge le profil si on est connecté mais que le profil n'est pas encore là
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      refreshProfile();
+    }
+  }, [isAuthenticated, user, refreshProfile]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/(auth)/login' as any);
+  };
+
+  const initiales = user ? getInitiales(user.display_name) : '?';
+  const displayName = user?.display_name ?? '—';
+  const memberSince = user?.created_at ? formatDate(user.created_at) : null;
+  const isPremiumActive = user?.is_premium ?? false;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       {/* ── Header ── */}
       <View style={styles.header}>
+        <Pressable hitSlop={10} onPress={() => router.back()}>
+          <IconSymbol name="chevron.left" size={22} color={Palette.foreground} />
+        </Pressable>
         <ThemedText style={styles.headerTitle}>Profil</ThemedText>
         <Pressable
           hitSlop={10}
@@ -65,28 +91,49 @@ export default function ProfilScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+
         {/* ── Avatar + nom ── */}
         <View style={styles.avatarSection}>
           <View style={styles.avatar}>
-            <ThemedText style={styles.avatarInitiales}>{USER.initiales}</ThemedText>
+            {!user ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <ThemedText style={styles.avatarInitiales}>{initiales}</ThemedText>
+            )}
           </View>
-          <ThemedText style={styles.userName}>{USER.prenom} {USER.nom}</ThemedText>
-          <ThemedText style={styles.userEmail}>{USER.email}</ThemedText>
-          <View style={styles.profilBadge}>
-            <IconSymbol name={USER.profilIcon} size={14} color={Palette.primary} />
-            <ThemedText style={styles.profilBadgeText}>{USER.profil}</ThemedText>
+
+          <ThemedText style={styles.userName}>{displayName}</ThemedText>
+
+          {memberSince && (
+            <ThemedText style={styles.memberSince}>Membre depuis le {memberSince}</ThemedText>
+          )}
+
+          {/* Badge abonnement */}
+          <View style={[styles.subBadge, isPremiumActive ? styles.subBadgePremium : styles.subBadgeFree]}>
+            <IconSymbol
+              name={isPremiumActive ? 'star.fill' : 'person.fill'}
+              size={13}
+              color={isPremiumActive ? '#C4882C' : Palette.primary}
+            />
+            <ThemedText style={[styles.subBadgeText, isPremiumActive && styles.subBadgeTextPremium]}>
+              {isPremiumActive ? 'Premium' : 'Compte gratuit'}
+            </ThemedText>
           </View>
         </View>
 
-        {/* ── Stats ── */}
-        <View style={styles.statsRow}>
-          {STATS.map(s => (
-            <View key={s.label} style={styles.statCard}>
-              <ThemedText style={styles.statValue}>{s.value}</ThemedText>
-              <ThemedText style={styles.statLabel}>{s.label}</ThemedText>
+        {/* ── Upgrade CTA (comptes gratuits uniquement) ── */}
+        {!isPremiumActive && <Pressable style={({ pressed }) => [styles.upgradeCard, pressed && styles.pressed]}>
+          <View style={styles.upgradeCardLeft}>
+            <IconSymbol name="star.fill" size={18} color="#C4882C" />
+            <View style={styles.upgradeCardText}>
+              <ThemedText style={styles.upgradeCardTitle}>Passer à Premium</ThemedText>
+              <ThemedText style={styles.upgradeCardDesc}>
+                Accès à tous les textes, téléchargement, lecture hors ligne
+              </ThemedText>
             </View>
-          ))}
-        </View>
+          </View>
+          <IconSymbol name="chevron.right" size={14} color={Palette.accent2} />
+        </Pressable>}
 
         {/* ── Menu sections ── */}
         {MENU_SECTIONS.map(section => (
@@ -116,10 +163,11 @@ export default function ProfilScreen() {
         {/* ── Déconnexion ── */}
         <Pressable
           style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
-          onPress={() => router.replace('/(auth)/login' as any)}>
+          onPress={handleLogout}>
           <IconSymbol name="rectangle.portrait.and.arrow.right" size={18} color="#C0392B" />
           <ThemedText style={styles.logoutText}>Se déconnecter</ThemedText>
         </Pressable>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -146,13 +194,13 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     paddingBottom: 48,
-    gap: 0,
   },
 
+  // ── Avatar ──────────────────────────────────────────────────────────────────
   avatarSection: {
     alignItems: 'center',
     paddingVertical: 28,
-    gap: 8,
+    gap: 6,
   },
   avatar: {
     width: 84,
@@ -161,7 +209,7 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   avatarInitiales: {
     fontSize: 30,
@@ -173,57 +221,68 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.heading.bold,
     color: Palette.foreground,
   },
-  userEmail: {
-    fontSize: 13,
+  memberSince: {
+    fontSize: 12,
     fontFamily: Fonts.body.regular,
     color: Palette.accent2,
   },
-  profilBadge: {
+
+  // ── Badge abonnement ─────────────────────────────────────────────────────────
+  subBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Palette.accent1,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
     marginTop: 4,
   },
-  profilBadgeText: {
+  subBadgeFree: {
+    backgroundColor: Palette.accent1,
+  },
+  subBadgePremium: {
+    backgroundColor: '#FDF3E3',
+  },
+  subBadgeText: {
     fontSize: 13,
     fontFamily: Fonts.body.semiBold,
     color: Palette.primary,
   },
-
-  statsRow: {
+  subBadgeTextPremium: {
+    color: '#C4882C',
+  },
+  // ── Upgrade CTA ──────────────────────────────────────────────────────────────
+  upgradeCard: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 14,
     alignItems: 'center',
-    gap: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
+    justifyContent: 'space-between',
+    backgroundColor: '#FDF3E3',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#F0D9B5',
   },
-  statValue: {
-    fontSize: 22,
-    fontFamily: Fonts.heading.bold,
-    color: Palette.primary,
+  upgradeCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
   },
-  statLabel: {
-    fontSize: 11,
+  upgradeCardText: { flex: 1, gap: 2 },
+  upgradeCardTitle: {
+    fontSize: 14,
+    fontFamily: Fonts.body.semiBold,
+    color: '#C4882C',
+  },
+  upgradeCardDesc: {
+    fontSize: 12,
     fontFamily: Fonts.body.regular,
     color: Palette.accent2,
-    textAlign: 'center',
+    lineHeight: 17,
   },
 
+  // ── Menu ─────────────────────────────────────────────────────────────────────
   menuSection: { marginBottom: 20 },
   menuSectionTitle: {
     fontSize: 11,
@@ -275,6 +334,7 @@ const styles = StyleSheet.create({
     marginLeft: 60,
   },
 
+  // ── Déconnexion ───────────────────────────────────────────────────────────────
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',

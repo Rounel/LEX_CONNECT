@@ -4,12 +4,13 @@ import { Platform } from 'react-native';
  * Palette unique de l'application — source de vérité pour toutes les couleurs.
  */
 export const Palette = {
-  background: '#f1f1f1',
+  background: '#FAFAFA',
   foreground: '#24221B',
   primary: '#162660',
   secondary: '#F2D04E',
   accent1: '#D0E6FD',
   accent2: '#787F56',
+  accent3: '#F8F5F2',
 } as const;
 
 export const Colors = {

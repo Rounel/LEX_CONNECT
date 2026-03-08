@@ -14,8 +14,10 @@ import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextInputField } from '@/components/text-input-field';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts, Palette } from '@/constants/theme';
+import { Colors, Fonts, Palette } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/contexts/auth-context';
+import { ApiError } from '@/services/api/client';
 
 type Profil = 'etudiant' | 'professionnel' | null;
 
@@ -34,8 +36,15 @@ const PROFILS = [
   },
 ];
 
+// Règles password conformes à l'API : min 8, max 128, au moins 1 lettre + 1 chiffre
+function isValidPassword(pwd: string): boolean {
+  if (pwd.length < 8 || pwd.length > 128) return false;
+  return /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd);
+}
+
 export default function RegisterScreen() {
   const router = useRouter();
+  const { register } = useAuth();
   const bgColor = useThemeColor({}, 'mainBackground');
 
   const [prenom, setPrenom] = useState('');
@@ -44,18 +53,36 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [profil, setProfil] = useState<Profil>(null);
   const [cguAccepted, setCguAccepted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canSubmit =
     prenom.trim().length > 0 &&
     nom.trim().length > 0 &&
     email.trim().length > 0 &&
-    password.length >= 6 &&
+    isValidPassword(password) &&
     profil !== null &&
     cguAccepted;
 
-  const handleRegister = () => {
-    // No-op pour l'instant — navigation vers les tabs
-    router.replace('/(country)/select');
+  const handleRegister = async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      await register(email.trim(), password, `${prenom.trim()} ${nom.trim()}`);
+      router.replace('/(country)/select');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 400 || err.status === 422) {
+          setError('Cet email est peut-être déjà utilisé, ou les informations sont invalides.');
+        } else {
+          setError('Une erreur est survenue. Veuillez réessayer.');
+        }
+      } else {
+        setError('Impossible de créer le compte. Vérifiez votre connexion internet.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -119,8 +146,8 @@ export default function RegisterScreen() {
             <TextInputField
               label="Mot de passe"
               value={password}
-              onChangeText={setPassword}
-              placeholder="6 caractères minimum"
+              onChangeText={(v) => { setPassword(v); setError(null); }}
+              placeholder="8 caractères min. (lettres + chiffres)"
               secureTextEntry
             />
 
@@ -190,10 +217,13 @@ export default function RegisterScreen() {
 
           {/* ── Actions ── */}
           <View style={styles.actions}>
+            {error !== null && (
+              <ThemedText style={styles.errorText}>{error}</ThemedText>
+            )}
             <PrimaryButton
-              title="Créer mon compte"
+              title={isLoading ? 'Création…' : 'Créer mon compte'}
               onPress={handleRegister}
-              disabled={!canSubmit}
+              disabled={!canSubmit || isLoading}
               style={styles.submitButton}
             />
             <View style={styles.loginRow}>
@@ -338,7 +368,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: Fonts.body.regular,
-    color: Palette.accent2,
+    color: Colors.text,
     lineHeight: 19,
   },
   cguLink: {
@@ -373,5 +403,11 @@ const styles = StyleSheet.create({
 
   pressed: {
     opacity: 0.75,
+  },
+  errorText: {
+    fontSize: 13,
+    fontFamily: Fonts.body.regular,
+    color: '#C62828',
+    lineHeight: 18,
   },
 });
