@@ -36,18 +36,18 @@ export const Colors = {
 
 /**
  * Polices de l'application
- * - heading: Noto Serif (titres, labels)
- * - body: Open Sans (paragraphes, phrases, inputs)
+ * - heading: Fira Sans (titres, labels)
+ * - body: Montserrat (paragraphes, phrases, inputs)
  */
 export const Fonts = {
   heading: {
-    regular: 'NotoSerif_400Regular',
-    semiBold: 'NotoSerif_600SemiBold',
-    bold: 'NotoSerif_700Bold',
+    regular: 'FiraSans_400Regular',
+    semiBold: 'FiraSans_600SemiBold',
+    bold: 'FiraSans_700Bold',
   },
   body: {
-    regular: 'OpenSans_400Regular',
-    semiBold: 'OpenSans_600SemiBold',
-    bold: 'OpenSans_700Bold',
+    regular: 'Montserrat_400Regular',
+    semiBold: 'Montserrat_600SemiBold',
+    bold: 'Montserrat_700Bold',
   },
 } as const;

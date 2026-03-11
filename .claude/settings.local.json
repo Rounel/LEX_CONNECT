@@ -11,7 +11,8 @@
       "Bash(mkdir:*)",
       "Bash(cd C:\\\\Users\\\\fabel\\\\Documents\\\\Ivoire_Node\\\\lex_connect:*)",
       "Bash(npx tsc:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(cd \"C:\\\\Users\\\\USER\\\\Documents\\\\in\\\\wilex\" && npm install @expo-google-fonts/fira-sans @expo-google-fonts/montserrat 2>&1 | tail -5)"
     ]
   }
 }

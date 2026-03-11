@@ -11,8 +11,10 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/fira-sans": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/lora": "^0.4.2",
+    "@expo-google-fonts/montserrat": "^0.4.2",
     "@expo-google-fonts/noto-serif": "^0.4.2",
     "@expo-google-fonts/open-sans": "^0.4.2",
     "@expo-google-fonts/playfair-display": "^0.4.2",

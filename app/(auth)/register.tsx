@@ -14,33 +14,37 @@ import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextInputField } from '@/components/text-input-field';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors, Fonts, Palette } from '@/constants/theme';
+import { Fonts, Palette } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/contexts/auth-context';
 import { ApiError } from '@/services/api/client';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type Profil = 'etudiant' | 'professionnel' | null;
 
-const PROFILS = [
+const PROFILS: { key: Exclude<Profil, null>; label: string; description: string; icon: 'graduationcap.fill' | 'briefcase.fill' }[] = [
   {
-    key: 'etudiant' as const,
+    key: 'etudiant',
     label: 'Étudiant en droit',
     description: 'Licence, Master, Doctorat',
-    icon: 'graduationcap.fill' as const,
+    icon: 'graduationcap.fill',
   },
   {
-    key: 'professionnel' as const,
+    key: 'professionnel',
     label: 'Professionnel',
     description: 'Avocat, Magistrat, Juriste…',
-    icon: 'briefcase.fill' as const,
+    icon: 'briefcase.fill',
   },
 ];
 
-// Règles password conformes à l'API : min 8, max 128, au moins 1 lettre + 1 chiffre
+// Règles password API : min 8, max 128, au moins 1 lettre + 1 chiffre
 function isValidPassword(pwd: string): boolean {
   if (pwd.length < 8 || pwd.length > 128) return false;
   return /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd);
 }
+
+// ─── Écran ────────────────────────────────────────────────────────────────────
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -71,12 +75,8 @@ export default function RegisterScreen() {
       await register(email.trim(), password, `${prenom.trim()} ${nom.trim()}`);
       router.replace('/(country)/select');
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 400 || err.status === 422) {
-          setError('Cet email est peut-être déjà utilisé, ou les informations sont invalides.');
-        } else {
-          setError('Une erreur est survenue. Veuillez réessayer.');
-        }
+      if (err instanceof ApiError && (err.status === 400 || err.status === 422)) {
+        setError('Cet email est peut-être déjà utilisé, ou les informations sont invalides.');
       } else {
         setError('Impossible de créer le compte. Vérifiez votre connexion internet.');
       }
@@ -86,24 +86,32 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: bgColor }]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+
+        {/* ── Nav bar ── */}
+        <View style={styles.nav}>
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.navBtn}>
+            <IconSymbol name="chevron.left" size={22} color={Palette.foreground} />
+          </Pressable>
+          <View style={styles.dots}>
+            <View style={[styles.dot, styles.dotFilled]} />
+          </View>
+          <Pressable onPress={() => router.replace('/(country)/select')} hitSlop={12} style={styles.navBtn}>
+            <IconSymbol name="xmark" size={18} color={Palette.foreground} />
+          </Pressable>
+        </View>
+
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
 
-          {/* ── Header ── */}
-          <View style={styles.header}>
-            <Pressable onPress={() => router.back()} style={styles.backRow} hitSlop={12}>
-              <IconSymbol name="chevron.left" size={20} color={Palette.primary} />
-              <ThemedText style={styles.backText}>Retour</ThemedText>
-            </Pressable>
-            <ThemedText type="title" style={styles.title}>
-              Créer un compte
-            </ThemedText>
+          {/* ── Titre ── */}
+          <View style={styles.titleSection}>
+            <ThemedText style={styles.title}>Créons votre{'\n'}compte</ThemedText>
             <ThemedText style={styles.subtitle}>
               Rejoignez Wilex, la bibliothèque juridique ivoirienne.
             </ThemedText>
@@ -112,7 +120,7 @@ export default function RegisterScreen() {
           {/* ── Formulaire ── */}
           <View style={styles.form}>
 
-            {/* Prénom + Nom côte à côte */}
+            {/* Prénom + Nom */}
             <View style={styles.nameRow}>
               <View style={styles.nameField}>
                 <TextInputField
@@ -147,66 +155,60 @@ export default function RegisterScreen() {
               label="Mot de passe"
               value={password}
               onChangeText={(v) => { setPassword(v); setError(null); }}
-              placeholder="8 caractères min. (lettres + chiffres)"
+              placeholder="8 car. min. avec lettres et chiffres"
               secureTextEntry
             />
 
-            {/* ── Sélecteur de profil ── */}
+            {/* Sélecteur de profil */}
             <View style={styles.profilSection}>
-              <ThemedText type="defaultSemiBold" style={styles.profilLabel}>
-                Je suis…
-              </ThemedText>
+              <ThemedText style={styles.profilLabel}>Je suis…</ThemedText>
               <View style={styles.profilRow}>
                 {PROFILS.map((p) => {
-                  const isSelected = profil === p.key;
+                  const selected = profil === p.key;
                   return (
                     <Pressable
                       key={p.key}
                       onPress={() => setProfil(p.key)}
                       style={({ pressed }) => [
                         styles.profilCard,
-                        isSelected && styles.profilCardSelected,
+                        selected && styles.profilCardSelected,
                         pressed && styles.pressed,
                       ]}>
                       <View
                         style={[
                           styles.profilIconWrap,
-                          { backgroundColor: isSelected ? Palette.primary + '18' : Palette.accent1 },
+                          { backgroundColor: selected ? Palette.primary + '18' : Palette.accent1 },
                         ]}>
                         <IconSymbol
                           name={p.icon}
-                          size={26}
-                          color={isSelected ? Palette.primary : Palette.accent2}
+                          size={24}
+                          color={selected ? Palette.primary : Palette.accent2}
                         />
                       </View>
                       <ThemedText
                         style={[
                           styles.profilCardLabel,
-                          isSelected && styles.profilCardLabelSelected,
+                          selected && styles.profilCardLabelSelected,
                         ]}>
                         {p.label}
                       </ThemedText>
-                      <ThemedText style={styles.profilCardDesc}>
-                        {p.description}
-                      </ThemedText>
+                      <ThemedText style={styles.profilCardDesc}>{p.description}</ThemedText>
                     </Pressable>
                   );
                 })}
               </View>
             </View>
 
-            {/* ── CGU ── */}
+            {/* CGU */}
             <Pressable
               style={styles.cguRow}
               onPress={() => setCguAccepted((v) => !v)}
               hitSlop={8}>
               <View style={[styles.checkbox, cguAccepted && styles.checkboxChecked]}>
-                {cguAccepted && (
-                  <IconSymbol name="checkmark" size={12} color="#fff" />
-                )}
+                {cguAccepted && <IconSymbol name="checkmark" size={11} color="#fff" />}
               </View>
               <ThemedText style={styles.cguText}>
-                J'accepte les{' '}
+                J&apos;accepte les{' '}
                 <ThemedText style={styles.cguLink}>Conditions générales</ThemedText>
                 {' '}et la{' '}
                 <ThemedText style={styles.cguLink}>Politique de confidentialité</ThemedText>
@@ -215,16 +217,20 @@ export default function RegisterScreen() {
 
           </View>
 
+          {/* ── Erreur ── */}
+          {error !== null && (
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          )}
+
+          <View style={styles.spacer} />
+
           {/* ── Actions ── */}
-          <View style={styles.actions}>
-            {error !== null && (
-              <ThemedText style={styles.errorText}>{error}</ThemedText>
-            )}
+          <View style={styles.bottomAction}>
             <PrimaryButton
               title={isLoading ? 'Création…' : 'Créer mon compte'}
               onPress={handleRegister}
               disabled={!canSubmit || isLoading}
-              style={styles.submitButton}
+              style={styles.cta}
             />
             <View style={styles.loginRow}>
               <ThemedText style={styles.loginText}>Déjà un compte ?</ThemedText>
@@ -240,71 +246,78 @@ export default function RegisterScreen() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
+  safe: { flex: 1 },
+  flex: { flex: 1 },
+
+  // Nav
+  nav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
-  flex: {
-    flex: 1,
+  navBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  dots: {
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: Palette.accent2 + '50',
+  },
+  dotFilled: {
+    backgroundColor: Palette.foreground,
+  },
+
+  // Layout
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingBottom: 32,
     gap: 28,
   },
+  spacer: { flex: 1, minHeight: 16 },
 
-  // Header
-  header: {
-    paddingTop: 16,
-    gap: 8,
-  },
-  backRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-  },
-  backText: {
-    fontSize: 15,
-    fontFamily: Fonts.body.semiBold,
-    color: Palette.primary,
-  },
+  // Titre
+  titleSection: { gap: 10 },
   title: {
+    fontSize: 38,
+    lineHeight: 44,
+    fontFamily: Fonts.heading.bold,
     color: Palette.foreground,
   },
   subtitle: {
     fontSize: 14,
+    lineHeight: 21,
     fontFamily: Fonts.body.regular,
     color: Palette.accent2,
-    lineHeight: 20,
   },
 
   // Formulaire
-  form: {
-    gap: 18,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  nameField: {
-    flex: 1,
-  },
+  form: { gap: 18 },
+  nameRow: { flexDirection: 'row', gap: 12 },
+  nameField: { flex: 1 },
 
-  // Sélecteur profil
-  profilSection: {
-    gap: 10,
-  },
+  // Profil selector
+  profilSection: { gap: 10 },
   profilLabel: {
     fontSize: 14,
+    fontFamily: Fonts.body.semiBold,
     color: Palette.foreground,
   },
-  profilRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  profilRow: { flexDirection: 'row', gap: 12 },
   profilCard: {
     flex: 1,
     alignItems: 'center',
@@ -312,7 +325,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: Palette.accent2 + '40',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     gap: 8,
   },
   profilCardSelected: {
@@ -320,8 +333,8 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.primary + '08',
   },
   profilIconWrap: {
-    width: 52,
-    height: 52,
+    width: 50,
+    height: 50,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -333,9 +346,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  profilCardLabelSelected: {
-    color: Palette.primary,
-  },
+  profilCardLabelSelected: { color: Palette.primary },
   profilCardDesc: {
     fontSize: 11,
     fontFamily: Fonts.body.regular,
@@ -368,7 +379,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: Fonts.body.regular,
-    color: Colors.text,
+    color: Palette.foreground,
     lineHeight: 19,
   },
   cguLink: {
@@ -377,18 +388,15 @@ const styles = StyleSheet.create({
     color: Palette.primary,
   },
 
-  // Actions
-  actions: {
-    gap: 16,
-  },
-  submitButton: {
-    width: '100%',
-  },
+  // Bottom
+  bottomAction: { gap: 14 },
+  cta: { height: 56, borderRadius: 14 },
   loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
+    paddingBottom: 8,
   },
   loginText: {
     fontSize: 14,
@@ -401,13 +409,12 @@ const styles = StyleSheet.create({
     color: Palette.primary,
   },
 
-  pressed: {
-    opacity: 0.75,
-  },
   errorText: {
     fontSize: 13,
     fontFamily: Fonts.body.regular,
     color: '#C62828',
     lineHeight: 18,
+    marginTop: -12,
   },
+  pressed: { opacity: 0.75 },
 });

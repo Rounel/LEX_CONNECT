@@ -6,15 +6,15 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { useFonts } from 'expo-font';
 import {
-  NotoSerif_400Regular,
-  NotoSerif_600SemiBold,
-  NotoSerif_700Bold,
-} from '@expo-google-fonts/noto-serif';
+  FiraSans_400Regular,
+  FiraSans_600SemiBold,
+  FiraSans_700Bold,
+} from '@expo-google-fonts/fira-sans';
 import {
-  OpenSans_400Regular,
-  OpenSans_600SemiBold,
-  OpenSans_700Bold,
-} from '@expo-google-fonts/open-sans';
+  Montserrat_400Regular,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+} from '@expo-google-fonts/montserrat';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppStateProvider } from '@/contexts/app-state-context';
@@ -28,12 +28,12 @@ function RootNavigator() {
   const { isReady } = useAppState();
 
   const [fontsLoaded] = useFonts({
-    NotoSerif_400Regular,
-    NotoSerif_600SemiBold,
-    NotoSerif_700Bold,
-    OpenSans_400Regular,
-    OpenSans_600SemiBold,
-    OpenSans_700Bold,
+    FiraSans_400Regular,
+    FiraSans_600SemiBold,
+    FiraSans_700Bold,
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
   });
 
   useEffect(() => {

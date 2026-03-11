@@ -39,11 +39,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: Fonts.body.regular,
+    textAlign: 'justify',
   },
   defaultSemiBold: {
     fontSize: 16,
     lineHeight: 24,
     fontFamily: Fonts.body.semiBold,
+    textAlign: 'justify',
   },
   title: {
     fontSize: 32,
