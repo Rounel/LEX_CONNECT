@@ -6,11 +6,14 @@ import { Platform } from 'react-native';
 export const Palette = {
   background: '#FAFAFA',
   foreground: '#24221B',
+  foreground2: '#4A4A4A',
   primary: '#162660',
   secondary: '#F2D04E',
   accent1: '#D0E6FD',
   accent2: '#787F56',
   accent3: '#F8F5F2',
+  accent4: '#D4C7AF',
+  accent5: '#D3C9BD',
 } as const;
 
 export const Colors = {
